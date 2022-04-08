@@ -29,6 +29,15 @@ Route::group([
     });
 
     Route::middleware('auth')->group(function() {
-//        Route::get('logout', []);
+        Route::get('email/verify', [\App\Http\Controllers\Auth\VerificationController::class, 'notice'])->name('verification.notice');
+        Route::post('email/verification-notification', [\App\Http\Controllers\Auth\VerificationController::class, 'resend'])->name('verification.resend');
+        Route::get('email/verify/{id}/{hash}', [\App\Http\Controllers\Auth\VerificationController::class, 'verify'])->name('verification.verify');
+
+
+        Route::get('logout', [\App\Http\Controllers\Auth\LogoutController::class, 'logout'])->name('logout');
+    });
+
+    Route::middleware('verified')->group(function() {
+
     });
 });

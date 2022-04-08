@@ -2,34 +2,38 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Rules\Auth\ValidatePasswordRule;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Request;
 
-class RegisterRequest extends FormRequest
+class LoginRequest extends FormRequest
 {
+    private $email;
+    private $password;
     /**
      * Determine if the user is authorized to make this request.
      *
      * @return bool
      */
-    public function authorize()
+    public function authorize(Request $request)
     {
+        $this->email = $request->email;
+        $this->password = $request->password;
+
         return true;
     }
 
     public function messages()
     {
         return [
-            'name.required' => 'Представьтесь, пожалуйста',
-
             'email.required' => 'Введите адрес электронной почты',
             'email.string' => 'Email не является строкой',
             'email.email' => 'Введён некорректный email адрес',
             'email.max' => 'Длина email некорркетная',
             'email.exists' => 'Пользователя с таким email\'ом не существует',
-            'email.unique' => 'Пользователь с таким email\'ом уже существует',
 
-            'password.min' => 'Минимальная длина пароля 6 символов',
-            'agreement.accepted' => 'Вы должны быть согласны с политикой обработки персональных данных'
+            'password.failed' => 'Некорректный пароль',
+            'password.min' => 'Минимальная длина пароля 3 символа',
         ];
     }
 
@@ -41,10 +45,11 @@ class RegisterRequest extends FormRequest
     public function rules()
     {
         return [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|max:255|unique:users',
-            'password' => 'required|min:6|confirmed',
-            'agreement' => 'accepted'
+            'email' => 'required|string|email|max:255|exists:users',
+            'password' => ['required', 'string', 'min:3', new ValidatePasswordRule([
+                'email' => $this->email,
+                'password' => $this->password,
+            ])],
         ];
     }
 }
